@@ -5,6 +5,12 @@ A Python tool that helps Twitch and YouTube streamers choose which Steam games t
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/meghanthota/MIST-4600-SteamPick/blob/main/SteamPick.ipynb)
 
+## Live Web App
+
+Try the interactive version of SteamPick:
+
+[Launch SteamPick](https://steampick.streamlit.app/)
+
 ## Problem
 
 StreamPick helps Twitch and YouTube streamers decide which Steam games to play next by comparing game popularity, average playtime, and player ratings.
