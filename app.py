@@ -1,75 +1,35 @@
 
 import streamlit as st
 import pandas as pd
+from html import escape
 
 st.set_page_config(
-    page_title="SteamPick | Game Discovery",
+    page_title="SteamPick | Find Your Next Game",
     page_icon="🎮",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-# Custom styling
-st.markdown("""
-<style>
-.stApp {
-    background-color: #10121D;
-    color: #F5F5FA;
-}
-.block-container {
-    max-width: 1050px;
-    padding-top: 2rem;
-}
-h1, h2, h3 {
-    color: #F5F5FA !important;
-}
-.stButton > button {
-    background-color: #7546DB;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 0.7rem 1.5rem;
-    font-weight: 600;
-}
-.stButton > button:hover {
-    background-color: #9066F0;
-    color: white;
-}
-.game-card {
-    background-color: #202337;
-    padding: 20px;
-    border-radius: 14px;
-    margin-bottom: 12px;
-    border: 1px solid #34364A;
-}
-.game-name {
-    font-size: 21px;
-    font-weight: 650;
-    color: #FFFFFF;
-}
-.game-info {
-    color: #B8B8C8;
-    margin-top: 8px;
-}
-.small-label {
-    color: #BBA9FF;
-    font-weight: 600;
-    letter-spacing: 1px;
-}
-</style>
-""", unsafe_allow_html=True)
+# -----------------------------
+# LOAD DATA
+# -----------------------------
 
-
-# Load data
 @st.cache_data
 def load_games():
-    url = "https://raw.githubusercontent.com/meghanthota/MIST-4600-SteamPick/main/steam_games.csv"
+    url = (
+        "https://raw.githubusercontent.com/meghanthota/"
+        "MIST-4600-SteamPick/main/steam_games.csv"
+    )
     return pd.read_csv(url)
 
 
 games = load_games()
 
 
-# Original analysis functions
+# -----------------------------
+# ORIGINAL ANALYSIS FUNCTIONS
+# -----------------------------
+
 def most_popular(games):
     return games.sort_values(
         "peak_ccu", ascending=False
@@ -89,7 +49,10 @@ def highest_rated(games):
     )[["name", "pct_pos_total", "num_reviews_total"]].head(5)
 
 
-# Original recommendation class
+# -----------------------------
+# ORIGINAL RECOMMENDATION CLASS
+# -----------------------------
+
 class SteamPick:
     def __init__(self, games):
         self.games = games.copy()
@@ -114,86 +77,314 @@ class SteamPick:
         )
 
         return ranked.sort_values("score").head(5)[
-            ["name", "peak_ccu", "avg_playtime_hours", "pct_pos_total"]
+            [
+                "appid",
+                "name",
+                "peak_ccu",
+                "avg_playtime_hours",
+                "pct_pos_total"
+            ]
         ]
 
 
-# Header
+# -----------------------------
+# CUSTOM DESIGN
+# -----------------------------
+
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Outfit', sans-serif;
+}
+
+.stApp {
+    background:
+        radial-gradient(ellipse at 75% 5%, #26154C 0%, transparent 40%),
+        radial-gradient(ellipse at 10% 35%, #10234A 0%, transparent 40%),
+        #090B16;
+    color: #F5F5FF;
+}
+
+.block-container {
+    max-width: 1150px;
+    padding-top: 1.5rem;
+    padding-bottom: 4rem;
+}
+
+h1, h2, h3, p {
+    color: #F5F5FF;
+}
+
+h1 {
+    font-size: clamp(2.5rem, 5vw, 4.5rem) !important;
+    font-weight: 800 !important;
+    letter-spacing: -2px;
+}
+
+h2 {
+    font-weight: 700 !important;
+}
+
+[data-testid="stHeader"] {
+    background: transparent;
+}
+
+[data-testid="stMetric"] {
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(170,140,255,0.18);
+    padding: 20px;
+    border-radius: 18px;
+}
+
+[data-testid="stMetricValue"] {
+    color: #C4A8FF;
+}
+
+.stButton > button {
+    background: linear-gradient(110deg, #8858FF, #5B74FF);
+    color: white !important;
+    border: none;
+    border-radius: 14px;
+    padding: 0.85rem 2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.25s ease;
+    box-shadow: 0 8px 30px rgba(113,75,255,0.25);
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(113,75,255,0.45);
+}
+
+.hero {
+    padding: 55px 35px;
+    border-radius: 24px;
+    background:
+        linear-gradient(90deg, rgba(10,12,28,0.96), rgba(10,12,28,0.35)),
+        url("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600");
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(180,150,255,0.2);
+    margin-bottom: 25px;
+}
+
+.eyebrow {
+    color: #BCA2FF !important;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.hero-title {
+    font-size: clamp(35px, 5vw, 65px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    color: white;
+    margin: 12px 0;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, #CBA9FF, #7DAAFF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-description {
+    color: #C7C7DD !important;
+    font-size: 17px;
+    max-width: 540px;
+    line-height: 1.6;
+}
+
+.game-card {
+    background: linear-gradient(145deg, #1D2038, #131626);
+    border: 1px solid #373453;
+    border-radius: 18px;
+    padding: 15px;
+    margin-bottom: 14px;
+    transition: transform 0.2s;
+}
+
+.game-card:hover {
+    transform: translateY(-4px);
+    border-color: #A783FF;
+}
+
+.game-image {
+    width: 100%;
+    aspect-ratio: 460 / 215;
+    object-fit: cover;
+    border-radius: 11px;
+    margin-bottom: 12px;
+}
+
+.game-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: white;
+    margin: 8px 0;
+}
+
+.game-stats {
+    color: #B8B6CF;
+    font-size: 13px;
+    line-height: 1.9;
+}
+
+.rank-label {
+    color: #C4A8FF;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.section-subtitle {
+    color: #B5B4CC !important;
+    margin-bottom: 22px;
+}
+
+[data-testid="stTabs"] button {
+    font-weight: 600;
+}
+
+hr {
+    border-color: #34334A;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+# -----------------------------
+# HEADER
+# -----------------------------
+
 st.markdown(
-    '<p class="small-label">🎮 STEAMPICK | GAME DISCOVERY</p>',
+    '<p class="eyebrow">🎮 STEAMPICK / GAME DISCOVERY</p>',
     unsafe_allow_html=True
 )
 
-st.title("Find Your Next Game to Stream.")
+st.markdown("""
+<div class="hero">
+    <div class="eyebrow">YOUR NEXT STREAM STARTS HERE</div>
+    <div class="hero-title">
+        Stop scrolling.<br>
+        <span class="gradient-text">Start playing.</span>
+    </div>
+    <p class="hero-description">
+        Discover Steam games worth streaming.
+        Powered by real player data, not just hype.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
-st.write(
-    "Stop guessing what to play next. SteamPick analyzes "
-    "popularity, average playtime, and player ratings "
-    "to recommend games worth exploring."
-)
 
-st.divider()
+# -----------------------------
+# QUICK STATS
+# -----------------------------
 
-# Quick statistics
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Games Analyzed", f"{len(games):,}")
+    st.metric("GAMES ANALYZED", f"{len(games):,}")
 
 with col2:
-    st.metric("Ranking Factors", "3")
+    st.metric("RANKING FACTORS", "3")
 
 with col3:
-    st.metric("Top Recommendations", "5")
+    st.metric("TOP PICKS", "5")
 
-st.divider()
+st.write("")
+st.write("")
 
-# Main recommendation section
-st.header("Your Next Game Starts Here")
-st.write(
-    "Get five recommendations based on a combination "
-    "of popularity, playtime, and positive player reviews."
+
+# -----------------------------
+# RECOMMENDATIONS
+# -----------------------------
+
+st.markdown(
+    '<p class="eyebrow">THE MAIN EVENT</p>',
+    unsafe_allow_html=True
 )
 
-if st.button("🎯 Discover My Top Games", type="primary"):
+st.header("Find Your Next Game")
+
+st.markdown(
+    '<p class="section-subtitle">'
+    'One click. Five data-powered recommendations.'
+    '</p>',
+    unsafe_allow_html=True
+)
+
+if st.button("🚀 FIND MY GAMES", type="primary",
+             use_container_width=True):
+
+    st.balloons()
+
     picker = SteamPick(games)
     recommendations = picker.recommend()
 
     st.subheader("Your Top 5 Picks")
 
+    # Show game cards in two columns
+    left, right = st.columns(2)
+
     for rank, (_, game) in enumerate(
         recommendations.iterrows(), start=1
     ):
-        st.markdown(
-            f"""
-            <div class="game-card">
-                <div class="small-label">PICK #{rank}</div>
-                <div class="game-name">{game['name']}</div>
-                <div class="game-info">
-                    👥 Peak players: {game['peak_ccu']:,.0f}
-                    &nbsp; | &nbsp;
-                    ⏱️ Avg. playtime: {game['avg_playtime_hours']:.1f} hrs
-                    &nbsp; | &nbsp;
-                    ⭐ Positive reviews: {game['pct_pos_total']:.0f}%
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
+        game_name = escape(str(game["name"]))
+
+        # Official Steam image using the game ID
+        image_url = (
+            f"https://shared.fastly.steamstatic.com/store_item_assets/"
+            f"steam/apps/{int(game['appid'])}/header.jpg"
         )
 
+        card = f"""
+        <div class="game-card">
+            <img class="game-image" src="{image_url}">
+            <div class="rank-label">PICK #{rank:02d}</div>
+            <div class="game-title">{game_name}</div>
+            <div class="game-stats">
+                👥 {game['peak_ccu']:,.0f} peak players<br>
+                ⏱️ {game['avg_playtime_hours']:.1f} average hours<br>
+                ⭐ {game['pct_pos_total']:.0f}% positive reviews
+            </div>
+        </div>
+        """
+
+        with (left if rank % 2 else right):
+            st.markdown(card, unsafe_allow_html=True)
+
     st.caption(
-        "Recommendations are based on historical Steam data, "
-        "not live Twitch or YouTube viewership."
+        "Ranked using historical Steam popularity, "
+        "playtime, and player ratings. "
+        "Not a prediction of live streaming performance."
     )
+
+
+# -----------------------------
+# EXPLORE SECTION
+# -----------------------------
 
 st.divider()
 
-# Explore section
-st.header("Explore the Data")
+st.markdown(
+    '<p class="eyebrow">GO DEEPER</p>',
+    unsafe_allow_html=True
+)
 
-st.write(
-    "Want to see what makes a game stand out? "
-    "Explore the top games in each category."
+st.header("Explore the Leaderboards")
+
+st.markdown(
+    '<p class="section-subtitle">'
+    'See which games lead in each category.'
+    '</p>',
+    unsafe_allow_html=True
 )
 
 tab1, tab2, tab3 = st.tabs([
@@ -203,8 +394,7 @@ tab1, tab2, tab3 = st.tabs([
 ])
 
 with tab1:
-    st.subheader("Most Popular Games")
-    st.write("Top five games by peak concurrent players.")
+    st.subheader("The Crowd Favorites")
     st.dataframe(
         most_popular(games),
         hide_index=True,
@@ -212,8 +402,7 @@ with tab1:
     )
 
 with tab2:
-    st.subheader("Longest Average Playtime")
-    st.write("Top five games by average hours played.")
+    st.subheader("Games That Keep Players Hooked")
     st.dataframe(
         longest_playtime(games),
         hide_index=True,
@@ -221,17 +410,25 @@ with tab2:
     )
 
 with tab3:
-    st.subheader("Highest Rated Games")
-    st.write("Top five games with at least 1,000 reviews.")
+    st.subheader("The Fan Favorites")
     st.dataframe(
         highest_rated(games),
         hide_index=True,
         use_container_width=True
     )
 
+
+# -----------------------------
+# FOOTER
+# -----------------------------
+
 st.divider()
 
-st.caption(
-    "SteamPick | MIST 4600 Python Project | "
-    "Steam data collected March 2025"
+st.markdown(
+    '<p style="text-align:center;color:#8989A8;font-size:13px;">'
+    'STEAMPICK © 2026 | MIST 4600 | '
+    'Built with Python, pandas & Streamlit<br>'
+    'Steam dataset collected March 2025'
+    '</p>',
+    unsafe_allow_html=True
 )
